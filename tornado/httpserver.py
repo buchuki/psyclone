@@ -191,7 +191,7 @@ class HTTPServer(object):
             try:
                 connection, address = self._socket.accept()
             except socket.error as e:
-                if e[0] in (errno.EWOULDBLOCK, errno.EAGAIN):
+                if e.errno in (errno.EWOULDBLOCK, errno.EAGAIN):
                     return
                 raise
             if self.ssl_options is not None:

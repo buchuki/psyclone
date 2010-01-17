@@ -174,7 +174,7 @@ class IOStream(object):
         if not chunk:
             self.close()
             return
-        self._read_buffer += chunk
+        self._read_buffer += str(chunk)
         if len(self._read_buffer) >= self.max_buffer_size:
             logging.error("Reached maximum read buffer size")
             self.close()

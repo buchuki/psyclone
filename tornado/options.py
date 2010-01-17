@@ -333,7 +333,8 @@ class _ColorLogFormatter(logging.Formatter):
         prefix = '[%(levelname)1.1s %(asctime)s %(module)s:%(lineno)d]' % \
             record.__dict__
         color = self._colors.get(record.levelno, self._normal)
-        formatted = color + prefix + self._normal + " " + record.message
+        formatted ="{0}{1}{2} {3}".format(color, prefix, self._normal,
+                record.message)
         if record.exc_info:
             if not record.exc_text:
                 record.exc_text = self.formatException(record.exc_info)
