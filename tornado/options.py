@@ -314,6 +314,7 @@ class _ColorLogFormatter(logging.Formatter):
     def __init__(self, *args, **kwargs):
         logging.Formatter.__init__(self, *args, **kwargs)
         fg_color = curses.tigetstr("setaf") or curses.tigetstr("setf") or ""
+        fg_color = str(fg_color)
         self._colors = {
             logging.DEBUG: curses.tparm(fg_color, 4), # Blue
             logging.INFO: curses.tparm(fg_color, 2), # Green
