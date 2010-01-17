@@ -21,7 +21,7 @@ and Google AppEngine.
 """
 
 import functools
-import ioloop
+from . import ioloop
 import logging
 import os
 import os.path
@@ -42,7 +42,7 @@ def start(io_loop=None, check_time=500):
 
 
 def _reload_on_update(io_loop, modify_times):
-    for module in sys.modules.values():
+    for module in list(sys.modules.values()):
         path = getattr(module, "__file__", None)
         if not path: continue
         if path.endswith(".pyc") or path.endswith(".pyo"):
@@ -56,7 +56,7 @@ def _reload_on_update(io_loop, modify_times):
             continue
         if modify_times[path] != modified:
             logging.info("%s modified; restarting server", path)
-            for fd in io_loop._handlers.keys():
+            for fd in list(io_loop._handlers.keys()):
                 try:
                     os.close(fd)
                 except:

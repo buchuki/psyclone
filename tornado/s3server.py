@@ -33,14 +33,14 @@ S3 client with this module:
 
 import bisect
 import datetime
-import escape
+from . import escape
 import hashlib
-import httpserver
-import ioloop
+from . import httpserver
+from . import ioloop
 import os
 import os.path
-import urllib
-import web
+import urllib.request, urllib.parse, urllib.error
+from . import web
 
 
 def start(port, root_directory="/tmp/s3", bucket_depth=0):
@@ -76,24 +76,24 @@ class BaseRequestHandler(web.RequestHandler):
     def render_xml(self, value):
         assert isinstance(value, dict) and len(value) == 1
         self.set_header("Content-Type", "application/xml; charset=UTF-8")
-        name = value.keys()[0]
+        name = list(value.keys())[0]
         parts = []
         parts.append('<' + escape.utf8(name) +
                      ' xmlns="http://doc.s3.amazonaws.com/2006-03-01">')
-        self._render_parts(value.values()[0], parts)
+        self._render_parts(list(value.values())[0], parts)
         parts.append('</' + escape.utf8(name) + '>')
         self.finish('<?xml version="1.0" encoding="UTF-8"?>\n' +
                     ''.join(parts))
 
     def _render_parts(self, value, parts=[]):
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             parts.append(escape.xhtml_escape(value))
-        elif isinstance(value, int) or isinstance(value, long):
+        elif isinstance(value, int) or isinstance(value, int):
             parts.append(str(value))
         elif isinstance(value, datetime.datetime):
             parts.append(value.strftime("%Y-%m-%dT%H:%M:%S.000Z"))
         elif isinstance(value, dict):
-            for name, subvalue in value.iteritems():
+            for name, subvalue in value.items():
                 if not isinstance(subvalue, list):
                     subvalue = [subvalue]
                 for subsubvalue in subvalue:
@@ -134,8 +134,8 @@ class RootHandler(BaseRequestHandler):
 
 class BucketHandler(BaseRequestHandler):
     def get(self, bucket_name):
-        prefix = self.get_argument("prefix", u"")
-        marker = self.get_argument("marker", u"")
+        prefix = self.get_argument("prefix", "")
+        marker = self.get_argument("marker", "")
         max_keys = int(self.get_argument("max-keys", 50000))
         path = os.path.abspath(os.path.join(self.application.directory,
                                             bucket_name))
@@ -211,7 +211,7 @@ class BucketHandler(BaseRequestHandler):
 
 class ObjectHandler(BaseRequestHandler):
     def get(self, bucket, object_name):
-        object_name = urllib.unquote(object_name)
+        object_name = urllib.parse.unquote(object_name)
         path = self._object_path(bucket, object_name)
         if not path.startswith(self.application.directory) or \
            not os.path.isfile(path):
@@ -227,7 +227,7 @@ class ObjectHandler(BaseRequestHandler):
             object_file.close()
 
     def put(self, bucket, object_name):
-        object_name = urllib.unquote(object_name)
+        object_name = urllib.parse.unquote(object_name)
         bucket_dir = os.path.abspath(os.path.join(
             self.application.directory, bucket))
         if not bucket_dir.startswith(self.application.directory) or \
@@ -245,7 +245,7 @@ class ObjectHandler(BaseRequestHandler):
         self.finish()
 
     def delete(self, bucket, object_name):
-        object_name = urllib.unquote(object_name)
+        object_name = urllib.parse.unquote(object_name)
         path = self._object_path(bucket, object_name)
         if not path.startswith(self.application.directory) or \
            not os.path.isfile(path):

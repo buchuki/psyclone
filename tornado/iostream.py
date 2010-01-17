@@ -17,7 +17,7 @@
 """A utility class to write to and read from a non-blocking socket."""
 
 import errno
-import ioloop
+from . import ioloop
 import logging
 import socket
 
@@ -163,7 +163,7 @@ class IOStream(object):
     def _handle_read(self):
         try:
             chunk = self.socket.recv(self.read_chunk_size)
-        except socket.error, e:
+        except socket.error as e:
             if e[0] in (errno.EWOULDBLOCK, errno.EAGAIN):
                 return
             else:
@@ -200,7 +200,7 @@ class IOStream(object):
             try:
                 num_bytes = self.socket.send(self._write_buffer)
                 self._write_buffer = self._write_buffer[num_bytes:]
-            except socket.error, e:
+            except socket.error as e:
                 if e[0] in (errno.EWOULDBLOCK, errno.EAGAIN):
                     break
                 else:

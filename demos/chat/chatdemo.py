@@ -70,7 +70,7 @@ class MessageMixin(object):
         cls = MessageMixin
         if cursor:
             index = 0
-            for i in xrange(len(cls.cache)):
+            for i in range(len(cls.cache)):
                 index = len(cls.cache) - i - 1
                 if cls.cache[index]["id"] == cursor: break
             recent = cls.cache[index + 1:]

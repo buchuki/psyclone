@@ -79,11 +79,11 @@ We provide the functions escape(), url_escape(), json_encode(), and squeeze()
 to all templates by default.
 """
 
-from __future__ import with_statement
 
-import cStringIO
+
+import io
 import datetime
-import escape
+from . import escape
 import logging
 import os.path
 import re
@@ -121,7 +121,7 @@ class Template(object):
             "datetime": datetime,
         }
         namespace.update(kwargs)
-        exec self.compiled in namespace
+        exec(self.compiled, namespace)
         execute = namespace["_execute"]
         try:
             return execute()
@@ -131,7 +131,7 @@ class Template(object):
             raise
 
     def _generate_python(self, loader, compress_whitespace):
-        buffer = cStringIO.StringIO()
+        buffer = io.StringIO()
         try:
             named_blocks = {}
             ancestors = self._get_ancestors(loader)
@@ -377,9 +377,9 @@ class _CodeWriter(object):
     def write_line(self, line, indent=None):
         if indent == None:
             indent = self._indent
-        for i in xrange(indent):
+        for i in range(indent):
             self.file.write("    ")
-        print >> self.file, line
+        print(line, file=self.file)
 
 
 class _TemplateReader(object):

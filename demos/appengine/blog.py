@@ -147,7 +147,7 @@ class EntryModule(tornado.web.UIModule):
 
 
 settings = {
-    "blog_title": u"Tornado Blog",
+    "blog_title": "Tornado Blog",
     "template_path": os.path.join(os.path.dirname(__file__), "templates"),
     "ui_modules": {"Entry": EntryModule},
     "xsrf_cookies": True,

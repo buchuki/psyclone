@@ -18,12 +18,12 @@
 
 import calendar
 import collections
-import cStringIO
+import io
 import email.utils
 import errno
 import functools
-import httplib
-import ioloop
+import http.client
+from . import ioloop
 import logging
 import pycurl
 import time
@@ -57,7 +57,7 @@ class HTTPClient(object):
         """
         if not isinstance(request, HTTPRequest):
            request = HTTPRequest(url=request, **kwargs)
-        buffer = cStringIO.StringIO()
+        buffer = io.StringIO()
         headers = {}
         try:
             _curl_setup_request(self._curl, request, buffer, headers)
@@ -69,7 +69,7 @@ class HTTPClient(object):
             return HTTPResponse(
                 request=request, code=code, headers=headers,
                 body=buffer.getvalue(), effective_url=effective_url)
-        except pycurl.error, e:
+        except pycurl.error as e:
             raise CurlError(*e)
         finally:
             buffer.close()
@@ -113,7 +113,7 @@ class AsyncHTTPClient(object):
             instance.io_loop = io_loop
             instance._multi = pycurl.CurlMulti()
             instance._curls = [_curl_create(max_simultaneous_connections)
-                               for i in xrange(max_clients)]
+                               for i in range(max_clients)]
             instance._free_list = instance._curls[:]
             instance._requests = collections.deque()
             instance._fds = {}
@@ -179,7 +179,7 @@ class AsyncHTTPClient(object):
                 (request, callback) = self._requests.popleft()
                 curl.info = {
                     "headers": {},
-                    "buffer": cStringIO.StringIO(),
+                    "buffer": io.StringIO(),
                     "request": request,
                     "callback": callback,
                     "start_time": time.time(),
@@ -213,14 +213,14 @@ class AsyncHTTPClient(object):
             if fd not in fds:
                 self.io_loop.remove_handler(fd)
 
-        for fd, events in fds.iteritems():
+        for fd, events in fds.items():
             old_events = self._fds.get(fd, None)
             if old_events is None:
                 self.io_loop.add_handler(fd, self._handle_events, events)
             elif old_events != events:
                 try:
                     self.io_loop.update_handler(fd, events)
-                except OSError, e:
+                except OSError as e:
                     if e[0] == errno.ENOENT:
                         self.io_loop.add_handler(fd, self._handle_events,
                                                  events)
@@ -304,14 +304,14 @@ class HTTPResponse(object):
             raise self.error
 
     def __repr__(self):
-        args = ",".join("%s=%r" % i for i in self.__dict__.iteritems())
+        args = ",".join("%s=%r" % i for i in self.__dict__.items())
         return "%s(%s)" % (self.__class__.__name__, args)
 
 
 class HTTPError(Exception):
     def __init__(self, code, message=None):
         self.code = code
-        message = message or httplib.responses.get(code, "Unknown")
+        message = message or http.client.responses.get(code, "Unknown")
         Exception.__init__(self, "HTTP %d: %s" % (self.code, message))
                 
 
@@ -333,7 +333,7 @@ def _curl_create(max_simultaneous_connections=None):
 def _curl_setup_request(curl, request, buffer, headers):
     curl.setopt(pycurl.URL, request.url)
     curl.setopt(pycurl.HTTPHEADER,
-                ["%s: %s" % i for i in request.headers.iteritems()])
+                ["%s: %s" % i for i in request.headers.items()])
     try:
         curl.setopt(pycurl.HEADERFUNCTION,
                     functools.partial(_curl_header_callback, headers))
@@ -368,7 +368,7 @@ def _curl_setup_request(curl, request, buffer, headers):
         "HEAD": pycurl.NOBODY,
     }
     custom_methods = set(["DELETE"])
-    for o in curl_options.values():
+    for o in list(curl_options.values()):
         curl.setopt(o, False)
     if request.method in curl_options:
         curl.unsetopt(pycurl.CUSTOMREQUEST)
@@ -380,7 +380,7 @@ def _curl_setup_request(curl, request, buffer, headers):
 
     # Handle curl's cryptic options for every individual HTTP method
     if request.method in ("POST", "PUT"):
-        request_buffer =  cStringIO.StringIO(request.body)
+        request_buffer =  io.StringIO(request.body)
         curl.setopt(pycurl.READFUNCTION, request_buffer.read)
         if request.method == "POST":
             def ioctl(cmd):
@@ -429,7 +429,7 @@ def _curl_debug(debug_type, debug_msg):
 def _utf8(value):
     if value is None:
         return value
-    if isinstance(value, unicode):
+    if isinstance(value, str):
         return value.encode("utf-8")
     assert isinstance(value, str)
     return value

@@ -16,10 +16,10 @@
 
 """Escaping/unescaping methods for HTML, JSON, URLs, and others."""
 
-import htmlentitydefs
+import html.entities
 import re
 import xml.sax.saxutils
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 try:
     import json
@@ -69,16 +69,16 @@ def squeeze(value):
 
 def url_escape(value):
     """Returns a valid URL-encoded version of the given value."""
-    return urllib.quote_plus(utf8(value))
+    return urllib.parse.quote_plus(utf8(value))
 
 
 def url_unescape(value):
     """Decodes the given value from a URL."""
-    return _unicode(urllib.unquote_plus(value))
+    return _unicode(urllib.parse.unquote_plus(value))
 
 
 def utf8(value):
-    if isinstance(value, unicode):
+    if isinstance(value, str):
         return value.encode("utf-8")
     assert isinstance(value, str)
     return value
@@ -87,14 +87,14 @@ def utf8(value):
 def _unicode(value):
     if isinstance(value, str):
         return value.decode("utf-8")
-    assert isinstance(value, unicode)
+    assert isinstance(value, str)
     return value
 
 
 def _convert_entity(m):
     if m.group(1) == "#":
         try:
-            return unichr(int(m.group(2)))
+            return chr(int(m.group(2)))
         except ValueError:
             return "&#%s;" % m.group(2)
     try:
@@ -105,8 +105,8 @@ def _convert_entity(m):
 
 def _build_unicode_map():
     unicode_map = {}
-    for name, value in htmlentitydefs.name2codepoint.iteritems():
-        unicode_map[name] = unichr(value)
+    for name, value in html.entities.name2codepoint.items():
+        unicode_map[name] = chr(value)
     return unicode_map
 
 _HTML_UNICODE_MAP = _build_unicode_map()

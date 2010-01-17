@@ -179,7 +179,7 @@ class IOLoop(object):
 
             try:
                 event_pairs = self._impl.poll(poll_timeout)
-            except Exception, e:
+            except Exception as e:
                 if e.args == (4, "Interrupted system call"):
                     logging.warning("Interrupted system call", exc_info=1)
                     continue
@@ -197,7 +197,7 @@ class IOLoop(object):
                     self._handlers[fd](fd, events)
                 except KeyboardInterrupt:
                     raise
-                except OSError, e:
+                except OSError as e:
                     if e[0] == errno.EPIPE:
                         # Happens when the client closes the connection
                         pass
@@ -408,7 +408,7 @@ class _Select(object):
             events[fd] = events.get(fd, 0) | IOLoop.WRITE
         for fd in errors:
             events[fd] = events.get(fd, 0) | IOLoop.ERROR
-        return events.items()
+        return list(events.items())
 
 
 # Choose a poll implementation. Use epoll if it is available, fall back to

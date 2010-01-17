@@ -39,7 +39,7 @@ class ContentHandler(tornado.web.RequestHandler):
             f = open(full_path, "r")
             contents = f.read().decode("utf-8")
             f.close()
-            if toc: contents = u"[TOC]\n\n" + contents
+            if toc: contents = "[TOC]\n\n" + contents
             md = markdown.Markdown(extensions=["toc"] if toc else [])
             ContentHandler._md[path] = md.convert(contents).encode("utf-8")
         return ContentHandler._md[path]
