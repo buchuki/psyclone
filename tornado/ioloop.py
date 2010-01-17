@@ -93,8 +93,8 @@ class IOLoop(object):
         r, w = os.pipe()
         self._set_nonblocking(r)
         self._set_nonblocking(w)
-        self._waker_reader = os.fdopen(r, "r", 0)
-        self._waker_writer = os.fdopen(w, "w", 0)
+        self._waker_reader = os.fdopen(r, "rb", 0)
+        self._waker_writer = os.fdopen(w, "wb", 0)
         self.add_handler(r, self._read_waker, self.WRITE)
 
     @classmethod
