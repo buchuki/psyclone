@@ -290,7 +290,7 @@ class _Option(object):
         return value.lower() not in ("false", "0", "f")
 
     def _parse_string(self, value):
-        return value
+        return value.decode('utf8')
 
 
 class Error(Exception):
@@ -314,14 +314,14 @@ class _ColorLogFormatter(logging.Formatter):
     def __init__(self, *args, **kwargs):
         logging.Formatter.__init__(self, *args, **kwargs)
         fg_color = curses.tigetstr("setaf") or curses.tigetstr("setf") or ""
-        fg_color = str(fg_color)
+        fg_color = str(fg_color, 'utf8')
         self._colors = {
             logging.DEBUG: curses.tparm(fg_color, 4), # Blue
             logging.INFO: curses.tparm(fg_color, 2), # Green
             logging.WARNING: curses.tparm(fg_color, 3), # Yellow
             logging.ERROR: curses.tparm(fg_color, 1), # Red
         }
-        self._normal = curses.tigetstr("sgr0")
+        self._normal = str(curses.tigetstr("sgr0"), 'utf8')
 
     def format(self, record):
         try:
@@ -332,7 +332,7 @@ class _ColorLogFormatter(logging.Formatter):
             "%y%m%d %H:%M:%S", self.converter(record.created))
         prefix = '[%(levelname)1.1s %(asctime)s %(module)s:%(lineno)d]' % \
             record.__dict__
-        color = self._colors.get(record.levelno, self._normal)
+        color = str(self._colors.get(record.levelno, self._normal), "utf8")
         formatted ="{0}{1}{2} {3}".format(color, prefix, self._normal,
                 record.message)
         if record.exc_info:
@@ -340,6 +340,7 @@ class _ColorLogFormatter(logging.Formatter):
                 record.exc_text = self.formatException(record.exc_info)
         if record.exc_text:
             formatted = formatted.rstrip() + "\n" + record.exc_text
+        print(formatted)
         return formatted.replace("\n", "\n    ")
 
 
