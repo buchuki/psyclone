@@ -290,7 +290,7 @@ class _Option(object):
         return value.lower() not in ("false", "0", "f")
 
     def _parse_string(self, value):
-        return value.decode("utf-8")
+        return value
 
 
 class Error(Exception):

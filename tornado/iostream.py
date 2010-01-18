@@ -66,8 +66,8 @@ class IOStream(object):
         self.io_loop = io_loop or ioloop.IOLoop.instance()
         self.max_buffer_size = max_buffer_size
         self.read_chunk_size = read_chunk_size
-        self._read_buffer = ""
-        self._write_buffer = ""
+        self._read_buffer = b""
+        self._write_buffer = b""
         self._read_delimiter = None
         self._read_bytes = None
         self._read_callback = None
@@ -80,7 +80,7 @@ class IOStream(object):
     def read_until(self, delimiter, callback):
         """Call callback when we read the given delimiter."""
         assert not self._read_callback, "Already reading"
-        loc = self._read_buffer.find(delimiter)
+        loc = self._read_buffer.find(bytes(delimiter, "utf8"))
         if loc != -1:
             callback(self._consume(loc + len(delimiter)))
             return
@@ -174,7 +174,7 @@ class IOStream(object):
         if not chunk:
             self.close()
             return
-        self._read_buffer += str(chunk)
+        self._read_buffer += chunk
         if len(self._read_buffer) >= self.max_buffer_size:
             logging.error("Reached maximum read buffer size")
             self.close()
@@ -187,7 +187,7 @@ class IOStream(object):
                 self._read_bytes = None
                 callback(self._consume(num_bytes))
         elif self._read_delimiter:
-            loc = self._read_buffer.find(self._read_delimiter)
+            loc = self._read_buffer.find(bytes(self._read_delimiter, 'utf8'))
             if loc != -1:
                 callback = self._read_callback
                 delimiter_len = len(self._read_delimiter)
@@ -214,7 +214,7 @@ class IOStream(object):
             callback()
 
     def _consume(self, loc):
-        result = self._read_buffer[:loc]
+        result = str(self._read_buffer[:loc], 'utf8')
         self._read_buffer = self._read_buffer[loc:]
         return result
 
