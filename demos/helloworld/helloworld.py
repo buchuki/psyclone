@@ -27,14 +27,16 @@ define("port", default=8888, help="run on the given port", type=int)
 
 class MainHandler(psyclone.web.RequestHandler):
     def get(self):
-        self.write("Hello, world")
+        self.write("Hello, worlds")
 
 
 def main():
     psyclone.options.parse_command_line()
     application = psyclone.web.Application([
         (r"/", MainHandler),
-    ])
+        ],
+        debug=True
+        )
     http_server = psyclone.httpserver.HTTPServer(application)
     http_server.listen(options.port)
     psyclone.ioloop.IOLoop.instance().start()
