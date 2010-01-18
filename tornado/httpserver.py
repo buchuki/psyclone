@@ -387,7 +387,7 @@ class HTTPRequest(object):
 
     def write(self, chunk):
         """Writes the given chunk to the response stream."""
-        assert isinstance(chunk, str)
+        assert isinstance(chunk, bytes)
         self.connection.write(chunk)
 
     def finish(self):

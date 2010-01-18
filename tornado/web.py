@@ -165,10 +165,8 @@ class RequestHandler(object):
         if isinstance(value, datetime.datetime):
             t = calendar.timegm(value.utctimetuple())
             value = email.utils.formatdate(t, localtime=False, usegmt=True)
-        elif isinstance(value, int) or isinstance(value, int):
-            value = str(value)
         else:
-            value = _utf8(value)
+            value = str(value)
             # If \n is allowed into the header, it is possible to inject
             # additional headers or split the request. Also cap length to
             # prevent obviously erroneous values.
@@ -425,7 +423,7 @@ class RequestHandler(object):
         if self.application._wsgi:
             raise Exception("WSGI applications do not support flush()")
 
-        chunk = "".join(self._write_buffer)
+        chunk = b"".join(self._write_buffer)
         self._write_buffer = []
         if not self._headers_written:
             self._headers_written = True
@@ -436,7 +434,7 @@ class RequestHandler(object):
         else:
             for transform in self._transforms:
                 chunk = transform.transform_chunk(chunk, include_footers)
-            headers = ""
+            headers = b""
 
         # Ignore the chunk and only write the headers for HEAD requests
         if self.request.method == "HEAD":
@@ -721,7 +719,7 @@ class RequestHandler(object):
         for cookie_dict in getattr(self, "_new_cookies", []):
             for cookie in list(cookie_dict.values()):
                 lines.append("Set-Cookie: " + cookie.OutputString(None))
-        return "\r\n".join(lines) + "\r\n\r\n"
+        return bytes("\r\n".join(lines) + "\r\n\r\n", "utf8")
 
     def _log(self):
         if self._status_code < 400:
