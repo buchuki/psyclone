@@ -126,6 +126,9 @@ class HTTPServer(object):
         """
         self.bind(port, address)
         self.start(1)
+        logging.info("Listening on {0}:{1}".format(
+            address, port))
+
 
     def bind(self, port, address=""):
         """Binds this server to the given port on the given IP address.
