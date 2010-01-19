@@ -1,48 +1,35 @@
 Running the Tornado Blog example app
 ====================================
-This demo is a simple blogging engine that uses MySQL to store posts and
-Google Accounts for author authentication. Since it depends on MySQL, you
-need to set up MySQL and the database schema for the demo to run.
+This demo is a simple blogging engine that uses py-postgresql to store posts and
+Google Accounts for author authentication. Since it depends on py-postgresql, you
+need to set up postgresql and the database schema for the demo to run.
 
-1. Install prerequisites and build tornado
+1. Install prerequisites and build psyclone
 
-   See http://www.tornadoweb.org/ for installation instructions. If you can
-   run the "helloworld" example application, your environment is set up
-   correctly.
+2. Install Postgresql
 
-2. Install MySQL if needed
+3. Instal py-postgresql
 
-   Consult the documentation for your platform. Under Ubuntu Linux you
-   can run "apt-get install mysql". Under OS X you can download the
-   MySQL PKG file from http://dev.mysql.com/downloads/mysql/
+3. Connect to  and create a database and user for the blog.
 
-3. Connect to MySQL and create a database and user for the blog.
-
-   Connect to MySQL as a user that can create databases and users:
-   mysql -u root
-
-   Create a database named "blog":
-   mysql> CREATE DATABASE blog;
-
-   Allow the "blog" user to connect with the password "blog":
-   mysql> GRANT ALL PRIVILEGES ON blog.* TO 'blog'@'localhost' IDENTIFIED BY 'blog';
+    $ su postgres
+    createuser psycloneblog
+    createdb psycloneblog -U psycloneblog
 
 4. Create the tables in your new database.
 
    You can use the provided schema.sql file by running this command:
+   psql -U psycloneblog psycloneblog < schema.sql
    mysql --user=blog --password=blog --database=blog < schema.sql
-
-   You can run the above command again later if you want to delete the
-   contents of the blog and start over after testing.
 
 5. Run the blog example
 
    With the default user, password, and database you can just run:
    ./blog.py
 
-   If you've changed anything, you can alter the default MySQL settings
+   If you've changed anything, you can alter the default postgres settings
    with arguments on the command line, e.g.:
-   ./blog.py --mysql_user=casey --mysql_password=happiness --mysql_database=foodblog
+   ./blog.py --db_user=casey --db_password=happiness --db_database=foodblog
 
 6. Visit your new blog
 
