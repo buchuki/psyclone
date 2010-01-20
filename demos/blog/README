@@ -10,19 +10,21 @@ need to set up postgresql and the database schema for the demo to run.
 
 3. Instal py-postgresql
 
-3. Connect to  and create a database and user for the blog.
+4. Install Markdown for Python 3. At this time, you have to run 2to3 on the source yourself
+    http://pypi.python.org/pypi/Markdown/
 
+5. Connect to  and create a database and user for the blog.
     $ su postgres
     createuser psycloneblog
     createdb psycloneblog -U psycloneblog
 
-4. Create the tables in your new database.
+6. Create the tables in your new database.
 
    You can use the provided schema.sql file by running this command:
    psql -U psycloneblog psycloneblog < schema.sql
    mysql --user=blog --password=blog --database=blog < schema.sql
 
-5. Run the blog example
+7. Run the blog example
 
    With the default user, password, and database you can just run:
    ./blog.py
@@ -31,7 +33,7 @@ need to set up postgresql and the database schema for the demo to run.
    with arguments on the command line, e.g.:
    ./blog.py --db_user=casey --db_password=happiness --db_database=foodblog
 
-6. Visit your new blog
+8. Visit your new blog
 
    Open http://localhost:8888/ in your web browser. You will be redirected to
    a Google account sign-in page because the blog uses Google accounts for
