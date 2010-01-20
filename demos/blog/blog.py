@@ -17,24 +17,22 @@
 import markdown
 import os.path
 import re
-import tornado.auth
-import tornado.database
-import tornado.httpserver
-import tornado.ioloop
-import tornado.options
-import tornado.web
+import psyclone.auth
+import psyclone.httpserver
+import psyclone.ioloop
+import psyclone.options
+import psyclone.web
 import unicodedata
 
-from tornado.options import define, options
+from psyclone.options import define, options
 
 define("port", default=8888, help="run on the given port", type=int)
-define("mysql_host", default="127.0.0.1:3306", help="blog database host")
-define("mysql_database", default="blog", help="blog database name")
-define("mysql_user", default="blog", help="blog database user")
-define("mysql_password", default="blog", help="blog database password")
+define("db_host", default="localhost", help="blog database host")
+define("db_database", default="psycloneblog", help="blog database name")
+define("db_user", default="psycloneblog", help="blog database user")
+define("db_password", default="", help="blog database password")
 
-
-class Application(tornado.web.Application):
+class Application(psyclone.web.Application):
     def __init__(self):
         handlers = [
             (r"/", HomeHandler),
@@ -53,16 +51,17 @@ class Application(tornado.web.Application):
             xsrf_cookies=True,
             cookie_secret="11oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
             login_url="/auth/login",
+            debug=True
         )
-        tornado.web.Application.__init__(self, handlers, **settings)
+        psyclone.web.Application.__init__(self, handlers, **settings)
 
         # Have one global connection to the blog DB across all handlers
-        self.db = tornado.database.Connection(
+        self.db = psyclone.database.Connection(
             host=options.mysql_host, database=options.mysql_database,
             user=options.mysql_user, password=options.mysql_password)
 
 
-class BaseHandler(tornado.web.RequestHandler):
+class BaseHandler(psyclone.web.RequestHandler):
     @property
     def db(self):
         return self.application.db
@@ -86,7 +85,7 @@ class HomeHandler(BaseHandler):
 class EntryHandler(BaseHandler):
     def get(self, slug):
         entry = self.db.get("SELECT * FROM entries WHERE slug = %s", slug)
-        if not entry: raise tornado.web.HTTPError(404)
+        if not entry: raise psyclone.web.HTTPError(404)
         self.render("entry.html", entry=entry)
 
 
@@ -106,7 +105,7 @@ class FeedHandler(BaseHandler):
 
 
 class ComposeHandler(BaseHandler):
-    @tornado.web.authenticated
+    @psyclone.web.authenticated
     def get(self):
         id = self.get_argument("id", None)
         entry = None
@@ -114,7 +113,7 @@ class ComposeHandler(BaseHandler):
             entry = self.db.get("SELECT * FROM entries WHERE id = %s", int(id))
         self.render("compose.html", entry=entry)
 
-    @tornado.web.authenticated
+    @psyclone.web.authenticated
     def post(self):
         id = self.get_argument("id", None)
         title = self.get_argument("title")
@@ -122,7 +121,7 @@ class ComposeHandler(BaseHandler):
         html = markdown.markdown(text)
         if id:
             entry = self.db.get("SELECT * FROM entries WHERE id = %s", int(id))
-            if not entry: raise tornado.web.HTTPError(404)
+            if not entry: raise psyclone.web.HTTPError(404)
             slug = entry.slug
             self.db.execute(
                 "UPDATE entries SET title = %s, markdown = %s, html = %s "
@@ -144,8 +143,8 @@ class ComposeHandler(BaseHandler):
         self.redirect("/entry/" + slug)
 
 
-class AuthLoginHandler(BaseHandler, tornado.auth.GoogleMixin):
-    @tornado.web.asynchronous
+class AuthLoginHandler(BaseHandler, psyclone.auth.GoogleMixin):
+    @psyclone.web.asynchronous
     def get(self):
         if self.get_argument("openid.mode", None):
             self.get_authenticated_user(self.async_callback(self._on_auth))
@@ -154,7 +153,7 @@ class AuthLoginHandler(BaseHandler, tornado.auth.GoogleMixin):
     
     def _on_auth(self, user):
         if not user:
-            raise tornado.web.HTTPError(500, "Google auth failed")
+            raise psyclone.web.HTTPError(500, "Google auth failed")
         author = self.db.get("SELECT * FROM authors WHERE email = %s",
                              user["email"])
         if not author:
@@ -179,16 +178,16 @@ class AuthLogoutHandler(BaseHandler):
         self.redirect(self.get_argument("next", "/"))
 
 
-class EntryModule(tornado.web.UIModule):
+class EntryModule(psyclone.web.UIModule):
     def render(self, entry):
         return self.render_string("modules/entry.html", entry=entry)
 
 
 def main():
-    tornado.options.parse_command_line()
-    http_server = tornado.httpserver.HTTPServer(Application())
+    psyclone.options.parse_command_line()
+    http_server = psyclone.httpserver.HTTPServer(Application())
     http_server.listen(options.port)
-    tornado.ioloop.IOLoop.instance().start()
+    psyclone.ioloop.IOLoop.instance().start()
 
 
 if __name__ == "__main__":
