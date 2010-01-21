@@ -16,7 +16,6 @@
 
 """A non-blocking, single-threaded HTTP server."""
 
-import cgi
 import errno
 import fcntl
 import functools
@@ -288,7 +287,7 @@ class HTTPConnection(object):
         content_type = self._request.headers.get("Content-Type", "")
         if self._request.method == "POST":
             if content_type.startswith("application/x-www-form-urlencoded"):
-                arguments = cgi.parse_qs(self._request.body)
+                arguments = urllib.parse.parse_qs(self._request.body)
                 for name, values in arguments.items():
                     values = [v for v in values if v]
                     if values:
@@ -378,7 +377,7 @@ class HTTPRequest(object):
         scheme, netloc, path, query, fragment = urllib.parse.urlsplit(uri)
         self.path = path
         self.query = query
-        arguments = cgi.parse_qs(query)
+        arguments = urllib.parse.parse_qs(query)
         self.arguments = {}
         for name, values in arguments.items():
             values = [v for v in values if v]
