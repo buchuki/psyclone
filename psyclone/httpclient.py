@@ -429,7 +429,7 @@ def _curl_debug(debug_type, debug_msg):
 def _utf8(value):
     if value is None:
         return value
-    if isinstance(value, str):
-        return value.encode("utf-8")
+    if isinstance(value, bytes):
+        return str(value, 'utf8')
     assert isinstance(value, str)
     return value

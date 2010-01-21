@@ -50,7 +50,7 @@ class Application(psyclone.web.Application):
             static_path=os.path.join(os.path.dirname(__file__), "static"),
             ui_modules={"Entry": EntryModule},
             xsrf_cookies=True,
-            cookie_secret="11oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
+            cookie_secret=b"11oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
             login_url="/auth/login",
             debug=True
         )
@@ -70,8 +70,7 @@ class BaseHandler(psyclone.web.RequestHandler):
     def get_current_user(self):
         user_id = self.get_secure_cookie("user")
         if not user_id: return None
-        return self.db.get("SELECT * FROM authors WHERE id = %s", int(user_id))
-
+        return self.db.prepare("SELECT * FROM authors WHERE id = $1").first(int(user_id))
 
 class HomeHandler(BaseHandler):
     def get(self):
@@ -155,15 +154,17 @@ class AuthLoginHandler(BaseHandler, psyclone.auth.GoogleMixin):
     def _on_auth(self, user):
         if not user:
             raise psyclone.web.HTTPError(500, "Google auth failed")
-        author = self.db.get("SELECT * FROM authors WHERE email = %s",
-                             user["email"])
+        author =self.db.prepare("SELECT * FROM authors WHERE email = $1"
+                ).first(user["email"])
         if not author:
             # Auto-create first author
-            any_author = self.db.get("SELECT * FROM authors LIMIT 1")
+            any_author = self.db.prepare("SELECT * FROM authors LIMIT 1"
+                    ).first()
             if not any_author:
-                author_id = self.db.execute(
-                    "INSERT INTO authors (email,name) VALUES (%s,%s)",
-                    user["email"], user["name"])
+                author_id = self.db.prepare(
+                        "INSERT INTO authors (email,name) VALUES ($1,$2) "
+                        "RETURNING id"
+                        )(user["email"], user["name"])
             else:
                 self.redirect("/")
                 return

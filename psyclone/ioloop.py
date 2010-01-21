@@ -281,6 +281,10 @@ class _Timeout(object):
         self.deadline = deadline
         self.callback = callback
 
+    def __lt__(self, other):
+        return (self.deadline, id(self.callback)) < (
+                other.deadline, id(other.callback))
+
     def __cmp__(self, other):
         return cmp((self.deadline, id(self.callback)),
                    (other.deadline, id(other.callback)))

@@ -216,8 +216,8 @@ class RequestHandler(object):
     def set_cookie(self, name, value, domain=None, expires=None, path="/",
                    expires_days=None):
         """Sets the given cookie name/value with the given options."""
-        name = _utf8(name)
-        value = _utf8(value)
+        name = _str(name)
+        value = _str(value)
         if re.search(r"[\x00-\x20]", name + value):
             # Don't let us accidentally inject bad stuff
             raise ValueError("Invalid cookie %r: %r" % (name, value))
@@ -259,27 +259,38 @@ class RequestHandler(object):
         To read a cookie set with this method, use get_secure_cookie().
         """
         timestamp = str(int(time.time()))
-        value = base64.b64encode(value)
+        value = base64.b64encode(_bytes(value))
+        logging.debug("Setting {0} type {1} with timestampe {2} type {3}".format(
+            value, type(value), timestamp, type(timestamp)))
         signature = self._cookie_signature(value, timestamp)
-        value = "|".join([value, timestamp, signature])
+        logging.debug('setting signature: {0}'.format(signature))
+        value = str(value, "utf8")
+        value = "|".join([str(x) for x in (value, timestamp, signature)])
         self.set_cookie(name, value, expires_days=expires_days, **kwargs)
 
     def get_secure_cookie(self, name):
         """Returns the given signed cookie if it validates, or None."""
         value = self.get_cookie(name)
         if not value: return None
-        parts = value.split("|")
-        if len(parts) != 3: return None
-        if not _time_independent_equals(parts[2],
-                    self._cookie_signature(parts[0], parts[1])):
+        try:
+            value, timestamp, signature = value.split("|")
+        except ValueError:
+            return None
+        value = bytes(value, 'utf8')
+        logging.debug("getting {0} type {1} with timestampe {2} type {3}".format(
+            value, type(value), timestamp, type(timestamp)))
+        calc_signature = self._cookie_signature(value, timestamp)
+        logging.debug('getting calc_signature: {0}'.format(calc_signature))
+        logging.debug('getting signature: {0}'.format(signature))
+        if not _time_independent_equals(signature, calc_signature):
             logging.warning("Invalid cookie signature %r", value)
             return None
-        timestamp = int(parts[1])
+        timestamp = int(timestamp)
         if timestamp < time.time() - 31 * 86400:
             logging.warning("Expired cookie %r", value)
             return None
         try:
-            return base64.b64decode(parts[0])
+            return base64.b64decode(value)
         except:
             return None
 
@@ -287,7 +298,10 @@ class RequestHandler(object):
         self.require_setting("cookie_secret", "secure cookies")
         hash = hmac.new(self.application.settings["cookie_secret"],
                         digestmod=hashlib.sha1)
-        for part in parts: hash.update(part)
+        for part in parts:
+            part = _bytes(part)
+            logging.debug("cookie signature part: {0}".format(part))
+            hash.update(part)
         return hash.hexdigest()
 
     def redirect(self, url, permanent=False):
@@ -296,7 +310,7 @@ class RequestHandler(object):
             raise Exception("Cannot redirect after headers have been written")
         self.set_status(301 if permanent else 302)
         # Remove whitespace
-        url = re.sub(r"[\x00-\x20]+", "", _utf8(url))
+        url = re.sub(r"[\x00-\x20]+", "", _str(url))
         self.set_header("Location", urllib.parse.urljoin(self.request.uri, url))
         self.finish()
 
@@ -327,7 +341,7 @@ class RequestHandler(object):
         html_heads = []
         for module in getattr(self, "_active_modules", {}).values():
             embed_part = module.embedded_javascript()
-            if embed_part: js_embed.append(_utf8(embed_part))
+            if embed_part: js_embed.append(_str(embed_part))
             file_part = module.javascript_files()
             if file_part:
                 if isinstance(file_part, str):
@@ -335,7 +349,7 @@ class RequestHandler(object):
                 else:
                     js_files.extend(file_part)
             embed_part = module.embedded_css()
-            if embed_part: css_embed.append(_utf8(embed_part))
+            if embed_part: css_embed.append(_str(embed_part))
             file_part = module.css_files()
             if file_part:
                 if isinstance(file_part, str):
@@ -343,7 +357,7 @@ class RequestHandler(object):
                 else:
                     css_files.extend(file_part)
             head_part = module.html_head()
-            if head_part: html_heads.append(_utf8(head_part))
+            if head_part: html_heads.append(_str(head_part))
         if js_files:
             paths = set()
             for path in js_files:
@@ -1351,7 +1365,9 @@ class URLSpec(object):
 
 url = URLSpec
 
-def _utf8(s):
+def _str(s):
+    if isinstance(s, bytes):
+        return str(s, 'utf8')
     assert isinstance(s, str)
     return s
 
@@ -1360,8 +1376,10 @@ def _unicode(s):
     return s
 
 def _bytes(s):
-    return bytes(s, 'utf8')
-
+    if isinstance(s, str):
+        return bytes(s, 'utf8')
+    assert isinstance(s, bytes)
+    return s
 
 def _time_independent_equals(a, b):
     if len(a) != len(b):
