@@ -1,0 +1,4 @@
+super calls for all inheritance trees
+py.test unit tests
+session framework, auth framework
+Remove all references to _utf8 and _unicode (web.py, at the least)
