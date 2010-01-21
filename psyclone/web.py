@@ -312,7 +312,7 @@ class RequestHandler(object):
         if isinstance(chunk, dict):
             chunk = escape.json_encode(chunk)
             self.set_header("Content-Type", "text/javascript; charset=UTF-8")
-        chunk = _utf8(chunk)
+        chunk = _bytes(chunk)
         self._write_buffer.append(chunk)
 
     def render(self, template_name, **kwargs):
@@ -1352,20 +1352,15 @@ class URLSpec(object):
 url = URLSpec
 
 def _utf8(s):
-    if isinstance(s, str):
-        return s.encode("utf-8")
     assert isinstance(s, str)
     return s
-
 
 def _unicode(s):
-    if isinstance(s, str):
-        try:
-            return s.decode("utf-8")
-        except UnicodeDecodeError:
-            raise HTTPError(400, "Non-utf8 argument")
     assert isinstance(s, str)
     return s
+
+def _bytes(s):
+    return bytes(s, 'utf8')
 
 
 def _time_independent_equals(a, b):
