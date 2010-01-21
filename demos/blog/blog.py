@@ -25,6 +25,7 @@ import psyclone.web
 import unicodedata
 
 from psyclone.options import define, options
+import postgresql
 
 define("port", default=8888, help="run on the given port", type=int)
 define("db_host", default="localhost", help="blog database host")
@@ -44,7 +45,7 @@ class Application(psyclone.web.Application):
             (r"/auth/logout", AuthLogoutHandler),
         ]
         settings = dict(
-            blog_title="Tornado Blog",
+            blog_title="Psyclone Blog",
             template_path=os.path.join(os.path.dirname(__file__), "templates"),
             static_path=os.path.join(os.path.dirname(__file__), "static"),
             ui_modules={"Entry": EntryModule},
@@ -56,9 +57,9 @@ class Application(psyclone.web.Application):
         psyclone.web.Application.__init__(self, handlers, **settings)
 
         # Have one global connection to the blog DB across all handlers
-        self.db = psyclone.database.Connection(
-            host=options.mysql_host, database=options.mysql_database,
-            user=options.mysql_user, password=options.mysql_password)
+        self.db = postgresql.open(
+            host=options.db_host, database=options.db_database,
+            user=options.db_user, password=options.db_password)
 
 
 class BaseHandler(psyclone.web.RequestHandler):
@@ -74,7 +75,7 @@ class BaseHandler(psyclone.web.RequestHandler):
 
 class HomeHandler(BaseHandler):
     def get(self):
-        entries = self.db.query("SELECT * FROM entries ORDER BY published "
+        entries = self.db.execute("SELECT * FROM entries ORDER BY published "
                                 "DESC LIMIT 5")
         if not entries:
             self.redirect("/compose")
@@ -91,14 +92,14 @@ class EntryHandler(BaseHandler):
 
 class ArchiveHandler(BaseHandler):
     def get(self):
-        entries = self.db.query("SELECT * FROM entries ORDER BY published "
+        entries = self.db.execute("SELECT * FROM entries ORDER BY published "
                                 "DESC")
         self.render("archive.html", entries=entries)
 
 
 class FeedHandler(BaseHandler):
     def get(self):
-        entries = self.db.query("SELECT * FROM entries ORDER BY published "
+        entries = self.db.execute("SELECT * FROM entries ORDER BY published "
                                 "DESC LIMIT 10")
         self.set_header("Content-Type", "application/atom+xml")
         self.render("feed.xml", entries=entries)
