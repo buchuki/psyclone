@@ -6,9 +6,18 @@ need to set up postgresql and the database schema for the demo to run.
 
 1. Install prerequisites and build psyclone
 
-2. Install Postgresql
+2. Install pycurl. This is currently not trivial
+    http://carnivore.it/2009/12/19/python3_pycurl
+
+    or:
+    cvs -z3 -d:pserver:anonymous@pycurl.cvs.sourceforge.net:/cvsroot/pycurl co -P pycurl
+    wget -O pycurl.patch http://p.carnivore.it/G6R9Go?download
+    cd pycurl
+    patch -p1 <../pycurl.patch
+    python3 setup.py install
 
 3. Instal py-postgresql
+    http://python.projects.postgresql.org/
 
 4. Install Markdown for Python 3. At this time, you have to run 2to3 on the source yourself
     http://pypi.python.org/pypi/Markdown/
