@@ -321,8 +321,8 @@ class _Expression(_Node):
     def generate(self, writer):
         writer.write_line("_tmp = %s" % self.expression)
         writer.write_line("if isinstance(_tmp, str): _buffer.append(_tmp)")
-        writer.write_line("elif isinstance(_tmp, unicode): "
-                          "_buffer.append(_tmp.encode('utf-8'))")
+        writer.write_line("elif isinstance(_tmp, bytes): "
+                          "_buffer.append(str(_tmp, 'utf8'))")
         writer.write_line("else: _buffer.append(str(_tmp))")
 
 

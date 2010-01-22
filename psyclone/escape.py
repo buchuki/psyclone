@@ -21,30 +21,14 @@ import re
 import xml.sax.saxutils
 import urllib.request, urllib.parse, urllib.error
 
-try:
-    import json
-    assert hasattr(json, "loads") and hasattr(json, "dumps")
-    _json_decode = lambda s: json.loads(s)
-    _json_encode = lambda v: json.dumps(v)
-except:
-    try:
-        import simplejson
-        _json_decode = lambda s: simplejson.loads(_unicode(s))
-        _json_encode = lambda v: simplejson.dumps(v)
-    except ImportError:
-        try:
-            # For Google AppEngine
-            from django.utils import simplejson
-            _json_decode = lambda s: simplejson.loads(_unicode(s))
-            _json_encode = lambda v: simplejson.dumps(v)
-        except ImportError:
-            raise Exception("A JSON parser is required, e.g., simplejson at "
-                            "http://pypi.python.org/pypi/simplejson/")
+import json
+_json_decode = lambda s: json.loads(s)
+_json_encode = lambda v: json.dumps(v)
 
 
 def xhtml_escape(value):
     """Escapes a string so it is valid within XML or XHTML."""
-    return utf8(xml.sax.saxutils.escape(value))
+    return xml.sax.saxutils.escape(_str(value))
 
 
 def xhtml_unescape(value):
@@ -76,6 +60,18 @@ def url_unescape(value):
     """Decodes the given value from a URL."""
     return _unicode(urllib.parse.unquote_plus(value))
 
+
+def _bytes(value):
+    if isinstance(value, str):
+        return bytes(value, 'utf8')
+    assert isinstance(value, bytes)
+    return value
+
+def _str(value):
+    if isinstance(value, bytes):
+        return str(value, 'utf8')
+    assert isinstance(value, str)
+    return value
 
 def utf8(value):
     if isinstance(value, str):
