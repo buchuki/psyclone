@@ -17,6 +17,7 @@
 import markdown
 import os.path
 import re
+import datetime
 import psyclone.auth
 import psyclone.httpserver
 import psyclone.ioloop
@@ -70,12 +71,13 @@ class BaseHandler(psyclone.web.RequestHandler):
     def get_current_user(self):
         user_id = self.get_secure_cookie("user")
         if not user_id: return None
-        return self.db.prepare("SELECT * FROM authors WHERE id = $1").first(int(user_id))
+        row = self.db.prepare("SELECT * FROM authors WHERE id = $1").first(int(user_id))
+        return row
 
 class HomeHandler(BaseHandler):
     def get(self):
-        entries = self.db.execute("SELECT * FROM entries ORDER BY published "
-                                "DESC LIMIT 5")
+        entries = self.db.prepare("SELECT * FROM entries ORDER BY published "
+                                "DESC LIMIT 5")()
         if not entries:
             self.redirect("/compose")
             return
@@ -84,22 +86,23 @@ class HomeHandler(BaseHandler):
 
 class EntryHandler(BaseHandler):
     def get(self, slug):
-        entry = self.db.get("SELECT * FROM entries WHERE slug = %s", slug)
+        entry = self.db.prepare("SELECT * FROM entries WHERE slug = $1"
+                ).first(slug)
         if not entry: raise psyclone.web.HTTPError(404)
         self.render("entry.html", entry=entry)
 
 
 class ArchiveHandler(BaseHandler):
     def get(self):
-        entries = self.db.execute("SELECT * FROM entries ORDER BY published "
-                                "DESC")
+        entries = self.db.prepare("SELECT * FROM entries ORDER BY published "
+                                "DESC")()
         self.render("archive.html", entries=entries)
 
 
 class FeedHandler(BaseHandler):
     def get(self):
-        entries = self.db.execute("SELECT * FROM entries ORDER BY published "
-                                "DESC LIMIT 10")
+        entries = self.db.prepare("SELECT * FROM entries ORDER BY published "
+                                "DESC LIMIT 10")()
         self.set_header("Content-Type", "application/atom+xml")
         self.render("feed.xml", entries=entries)
 
@@ -110,7 +113,8 @@ class ComposeHandler(BaseHandler):
         id = self.get_argument("id", None)
         entry = None
         if id:
-            entry = self.db.get("SELECT * FROM entries WHERE id = %s", int(id))
+            entry = self.db.prepare("SELECT * FROM entries WHERE id = $1"
+                    ).first(int(id))
         self.render("compose.html", entry=entry)
 
     @psyclone.web.authenticated
@@ -120,26 +124,27 @@ class ComposeHandler(BaseHandler):
         text = self.get_argument("markdown")
         html = markdown.markdown(text)
         if id:
-            entry = self.db.get("SELECT * FROM entries WHERE id = %s", int(id))
+            entry = self.db.prepare("SELECT * FROM entries WHERE id = $1"
+                    ).first(int(id))
             if not entry: raise psyclone.web.HTTPError(404)
-            slug = entry.slug
-            self.db.execute(
-                "UPDATE entries SET title = %s, markdown = %s, html = %s "
-                "WHERE id = %s", title, text, html, int(id))
+            slug = entry['slug']
+            self.db.prepare(
+                "UPDATE entries SET title = $1, markdown = $2, html = $3 "
+                "WHERE id = $4")(title, text, html, int(id))
         else:
-            slug = unicodedata.normalize("NFKD", title).encode(
-                "ascii", "ignore")
+            slug = unicodedata.normalize("NFKD", title)
             slug = re.sub(r"[^\w]+", " ", slug)
             slug = "-".join(slug.lower().strip().split())
             if not slug: slug = "entry"
             while True:
-                e = self.db.get("SELECT * FROM entries WHERE slug = %s", slug)
+                e = self.db.prepare("SELECT * FROM entries WHERE slug = $1").first(slug)
                 if not e: break
                 slug += "-2"
-            self.db.execute(
+            self.db.prepare(
                 "INSERT INTO entries (author_id,title,slug,markdown,html,"
-                "published) VALUES (%s,%s,%s,%s,%s,UTC_TIMESTAMP())",
-                self.current_user.id, title, slug, text, html)
+                "published,updated) VALUES ($1,$2,$3,$4,$5,$6,$7)")(
+                        self.current_user['id'], title, slug, text, html,
+                        datetime.datetime.now(), datetime.datetime.now())
         self.redirect("/entry/" + slug)
 
 
