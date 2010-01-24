@@ -1040,7 +1040,7 @@ class HTTPError(Exception):
 class ErrorHandler(RequestHandler):
     """Generates an error response with status_code for all requests."""
     def __init__(self, application, request, status_code):
-        RequestHandler.__init__(self, application, request)
+        super().__init__(application, request)
         self.set_status(status_code)
 
     def prepare(self):
@@ -1057,7 +1057,7 @@ class RedirectHandler(RequestHandler):
         ])
     """
     def __init__(self, application, request, url, permanent=True):
-        RequestHandler.__init__(self, application, request)
+        super().__init__(application, request)
         self._url = url
         self._permanent = permanent
 
@@ -1084,7 +1084,7 @@ class StaticFileHandler(RequestHandler):
     /static/images/myimage.png?v=xxx.
     """
     def __init__(self, application, request, path):
-        RequestHandler.__init__(self, application, request)
+        super().__init__(application, request)
         self.root = os.path.abspath(path) + "/"
 
     def head(self, path):
@@ -1147,7 +1147,7 @@ class FallbackHandler(RequestHandler):
         ])
     """
     def __init__(self, app, request, fallback):
-        RequestHandler.__init__(self, app, request)
+        super().__init__(app, request)
         self.fallback = fallback
 
     def prepare(self):

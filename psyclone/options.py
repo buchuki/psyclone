@@ -312,7 +312,7 @@ def enable_pretty_logging():
 
 class _ColorLogFormatter(logging.Formatter):
     def __init__(self, *args, **kwargs):
-        logging.Formatter.__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
         fg_color = curses.tigetstr("setaf") or curses.tigetstr("setf") or ""
         fg_color = str(fg_color, 'utf8')
         self._colors = {

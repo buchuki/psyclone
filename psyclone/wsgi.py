@@ -68,11 +68,11 @@ class WSGIApplication(web.Application):
     do not support flush() or asynchronous methods.
     """
     def __init__(self, handlers=None, default_host="", **settings):
-        web.Application.__init__(self, handlers, default_host, transforms=[],
-                                 wsgi=True, **settings)
+        super().__init__(handlers, default_host, transforms=[], wsgi=True,
+                **settings)
 
     def __call__(self, environ, start_response):
-        handler = web.Application.__call__(self, HTTPRequest(environ))
+        handler = super()__call__(HTTPRequest(environ))
         assert handler._finished
         status = str(handler._status_code) + " " + \
             http.client.responses[handler._status_code]
@@ -282,10 +282,10 @@ class WSGIContainer:
 class HTTPHeaders(dict):
     """A dictionary that maintains Http-Header-Case for all keys."""
     def __setitem__(self, name, value):
-        dict.__setitem__(self, self._normalize_name(name), value)
+        super().__setitem__(self._normalize_name(name), value)
 
     def __getitem__(self, name):
-        return dict.__getitem__(self, self._normalize_name(name))
+        return super().__getitem__(self._normalize_name(name))
 
     def _normalize_name(self, name):
         return "-".join([w.capitalize() for w in name.split("-")])

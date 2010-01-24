@@ -59,7 +59,7 @@ class S3Application(web.Application):
     directories. 1 means one level of directories, 2 means 2, etc.
     """
     def __init__(self, root_directory, bucket_depth=0):
-        web.Application.__init__(self, [
+        super().__init__([
             (r"/", RootHandler),
             (r"/([^/]+)/(.+)", ObjectHandler),
             (r"/([^/]+)/", BucketHandler),

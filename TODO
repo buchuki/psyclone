@@ -1,4 +1,5 @@
-super calls for all inheritance trees
+Remove all references to _utf8 and _unicode (web.py, at the least)
 py.test unit tests
 session framework, auth framework
-Remove all references to _utf8 and _unicode (web.py, at the least)
+Do something about all those improper private variables
+Do something about duplicate classes, like HTTPHeaders in wsgi and httpserver

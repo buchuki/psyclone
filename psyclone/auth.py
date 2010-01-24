@@ -648,7 +648,7 @@ class GoogleMixin(OpenIdMixin, OAuthMixin):
             http.fetch(self._oauth_access_token_url(token),
                        self.async_callback(self._on_access_token, callback))
         else:
-            OpenIdMixin.get_authenticated_user(self, callback)
+            super().get_authenticated_user(callback)
 
     def _oauth_consumer_token(self):
         self.require_setting("google_consumer_key", "Google OAuth")
@@ -658,7 +658,7 @@ class GoogleMixin(OpenIdMixin, OAuthMixin):
             secret=self.settings["google_consumer_secret"])
 
     def _oauth_get_user(self, access_token, callback):
-        OpenIdMixin.get_authenticated_user(self, callback)
+        super().get_authenticated_user(callback)
 
 
 class FacebookMixin:

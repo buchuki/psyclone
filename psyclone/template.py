@@ -239,7 +239,7 @@ class _NamedBlock(_Node):
 
     def find_named_blocks(self, loader, named_blocks):
         named_blocks[self.name] = self.body
-        _Node.find_named_blocks(self, loader, named_blocks)
+        super().find_named_blocks(loader, named_blocks)
 
 
 class _ExtendsBlock(_Node):
