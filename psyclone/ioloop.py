@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #
 # Copyright 2009 Facebook
+# Copyright 2010 Dusty Phillips
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -317,28 +318,6 @@ class PeriodicCallback(object):
         self.start()
 
 
-class _EPoll(object):
-    """An epoll-based event loop using our C module for Python 2.5 systems"""
-    _EPOLL_CTL_ADD = 1
-    _EPOLL_CTL_DEL = 2
-    _EPOLL_CTL_MOD = 3
-
-    def __init__(self):
-        self._epoll_fd = epoll.epoll_create()
-
-    def register(self, fd, events):
-        epoll.epoll_ctl(self._epoll_fd, self._EPOLL_CTL_ADD, fd, events)
-
-    def modify(self, fd, events):
-        epoll.epoll_ctl(self._epoll_fd, self._EPOLL_CTL_MOD, fd, events)
-
-    def unregister(self, fd):
-        epoll.epoll_ctl(self._epoll_fd, self._EPOLL_CTL_DEL, fd, 0)
-
-    def poll(self, timeout):
-        return epoll.epoll_wait(self._epoll_fd, int(timeout * 1000))
-
-
 class _KQueue(object):
     """A kqueue-based event loop for BSD/Mac systems."""
     def __init__(self):
@@ -415,21 +394,14 @@ class _Select(object):
         return list(events.items())
 
 
-# Choose a poll implementation. Use epoll if it is available, fall back to
-# select() for non-Linux platforms
-if hasattr(select, "epoll"):
-    # Python 2.6+ on Linux
+# Choose a poll implementation. Use epoll if it is available, KQueue otherwise.
+# Fall back to select() for non-Linux platforms
+try:
     _poll = select.epoll
-elif hasattr(select, "kqueue"):
-    # Python 2.6+ on BSD or Mac
-    _poll = _KQueue
-else:
+except AttributeError:
     try:
-        # Linux systems with our C module installed
-        import epoll
-        _poll = _EPoll
-    except:
-        # All other systems
+        _poll = _KQueue
+    except AttributeError:
         import sys
         if "linux" in sys.platform:
             logging.warning("epoll module not found; using select()")
