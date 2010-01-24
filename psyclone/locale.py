@@ -133,7 +133,7 @@ def get_supported_locales(cls):
     return _supported_locales
 
 
-class Locale(object):
+class Locale:
     @classmethod
     def get_closest(cls, *locale_codes):
         """Returns the closest match for the given locale code."""

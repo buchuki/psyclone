@@ -59,7 +59,7 @@ import urllib.parse
 import uuid
 
 
-class OpenIdMixin(object):
+class OpenIdMixin:
     """Abstract implementation of OpenID and Attribute Exchange.
 
     See GoogleMixin below for example implementations.
@@ -195,7 +195,7 @@ class OpenIdMixin(object):
         callback(user)
 
 
-class OAuthMixin(object):
+class OAuthMixin:
     """Abstract implementation of OAuth.
 
     See TwitterMixin and FriendFeedMixin below for example implementations.
@@ -661,7 +661,7 @@ class GoogleMixin(OpenIdMixin, OAuthMixin):
         OpenIdMixin.get_authenticated_user(self, callback)
 
 
-class FacebookMixin(object):
+class FacebookMixin:
     """Facebook Connect authentication.
 
     To authenticate with Facebook, register your application with

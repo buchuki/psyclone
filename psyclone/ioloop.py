@@ -26,7 +26,7 @@ import select
 import time
 
 
-class IOLoop(object):
+class IOLoop:
     """A level-triggered I/O loop.
 
     We use epoll if it is available, or else we fall back on select(). If
@@ -110,7 +110,7 @@ class IOLoop(object):
         a default argument to enable programs with multiple IOLoops
         but not require the argument for simpler applications:
 
-            class MyClass(object):
+            class MyClass:
                 def __init__(self, io_loop=None):
                     self.io_loop = io_loop or IOLoop.instance()
         """
@@ -276,7 +276,7 @@ class IOLoop(object):
         fcntl.fcntl(fd, fcntl.F_SETFL, flags | os.O_NONBLOCK)
 
 
-class _Timeout(object):
+class _Timeout:
     """An IOLoop timeout, a UNIX timestamp and a callback"""
     def __init__(self, deadline, callback):
         self.deadline = deadline
@@ -291,7 +291,7 @@ class _Timeout(object):
                    (other.deadline, id(other.callback)))
 
 
-class PeriodicCallback(object):
+class PeriodicCallback:
     """Schedules the given callback to be called periodically.
 
     The callback is called every callback_time milliseconds.
@@ -318,7 +318,7 @@ class PeriodicCallback(object):
         self.start()
 
 
-class _KQueue(object):
+class _KQueue:
     """A kqueue-based event loop for BSD/Mac systems."""
     def __init__(self):
         self._kqueue = select.kqueue()
@@ -359,7 +359,7 @@ class _KQueue(object):
         return events
 
 
-class _Select(object):
+class _Select:
     """A simple, select()-based IOLoop implementation for non-Linux systems"""
     def __init__(self):
         self.read_fds = set()

@@ -89,7 +89,7 @@ import os.path
 import re
 
 
-class Template(object):
+class Template:
     """A compiled template.
 
     We compile into Python from the given template_string. You can generate
@@ -158,7 +158,7 @@ class Template(object):
         return ancestors
 
 
-class Loader(object):
+class Loader:
     """A template loader that loads from a single root directory.
 
     You must use a template loader to use template constructs like
@@ -186,7 +186,7 @@ class Loader(object):
         return self.templates[name]
 
 
-class _Node(object):
+class _Node:
     def each_child(self):
         return ()
 
@@ -349,7 +349,7 @@ class ParseError(Exception):
     pass
 
 
-class _CodeWriter(object):
+class _CodeWriter:
     def __init__(self, file, named_blocks, loader, current_template,
                  compress_whitespace):
         self.file = file
@@ -382,7 +382,7 @@ class _CodeWriter(object):
         print(line, file=self.file)
 
 
-class _TemplateReader(object):
+class _TemplateReader:
     def __init__(self, name, text):
         self.name = name
         self.text = text

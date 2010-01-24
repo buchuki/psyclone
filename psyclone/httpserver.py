@@ -33,7 +33,7 @@ except ImportError:
     ssl = None
 
 
-class HTTPServer(object):
+class HTTPServer:
     """A non-blocking, single-threaded HTTP server.
 
     A server is defined by a request callback that takes an HTTPRequest
@@ -208,7 +208,7 @@ class HTTPServer(object):
                 logging.error("Error in connection callback", exc_info=True)
 
 
-class HTTPConnection(object):
+class HTTPConnection:
     """Handles a connection to an HTTP client, executing HTTP requests.
 
     We parse HTTP headers and bodies, and execute the request callback
@@ -334,7 +334,7 @@ class HTTPConnection(object):
                 self._request.arguments.setdefault(name, []).append(value)
 
 
-class HTTPRequest(object):
+class HTTPRequest:
     """A single HTTP request.
 
     GET/POST arguments are available in the arguments property, which

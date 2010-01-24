@@ -84,7 +84,7 @@ class WSGIApplication(web.Application):
         return handler._write_buffer
 
 
-class HTTPRequest(object):
+class HTTPRequest:
     """Mimics httpserver.HTTPRequest for WSGI applications."""
     def __init__(self, environ):
         """Parses the given WSGI environ to construct the request."""
@@ -184,7 +184,7 @@ class HTTPRequest(object):
                 self.arguments.setdefault(name, []).append(value)
 
 
-class WSGIContainer(object):
+class WSGIContainer:
     """Makes a WSGI-compatible function runnable on Tornado's HTTP server.
 
     Wrap a WSGI function in a WSGIContainer and pass it to HTTPServer to

@@ -71,7 +71,7 @@ import urllib.parse
 import uuid
 
 
-class RequestHandler(object):
+class RequestHandler:
     """Subclass this class and define get() or post() to make a handler.
 
     If you want to support more methods than the standard GET/HEAD/POST, you
@@ -848,7 +848,7 @@ def addslash(method):
     return wrapper
 
 
-class Application(object):
+class Application:
     """A collection of request handlers that make up a web application.
 
     Instances of this class are callable and can be passed directly to
@@ -1155,7 +1155,7 @@ class FallbackHandler(RequestHandler):
         self._finished = True
 
 
-class OutputTransform(object):
+class OutputTransform:
     """A transform modifies the result of an HTTP request (e.g., GZip encoding)
 
     A new transform instance is created for every request. See the
@@ -1263,7 +1263,7 @@ def authenticated(method):
     return wrapper
 
 
-class UIModule(object):
+class UIModule:
     """A UI re-usable, modular unit on a page.
 
     UI modules often execute additional queries, and they can include
@@ -1303,7 +1303,7 @@ class UIModule(object):
     def render_string(self, path, **kwargs):
         return self.handler.render_string(path, **kwargs)
 
-class URLSpec(object):
+class URLSpec:
     """Specifies mappings between URLs and handlers."""
     def __init__(self, pattern, handler_class, kwargs={}, name=None):
         """Creates a URLSpec.

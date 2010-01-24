@@ -29,7 +29,7 @@ import pycurl
 import time
 
 
-class HTTPClient(object):
+class HTTPClient:
     """A blocking HTTP client backed with pycurl.
 
     Typical usage looks like this:
@@ -75,7 +75,7 @@ class HTTPClient(object):
             buffer.close()
 
 
-class AsyncHTTPClient(object):
+class AsyncHTTPClient:
     """An non-blocking HTTP client backed with pycurl.
 
     Example usage:
@@ -250,7 +250,7 @@ class AsyncHTTPClient(object):
             request_time=time.time() - info["start_time"]))
 
 
-class HTTPRequest(object):
+class HTTPRequest:
     def __init__(self, url, method="GET", headers={}, body=None,
                  auth_username=None, auth_password=None,
                  connect_timeout=None, request_timeout=None,
@@ -279,7 +279,7 @@ class HTTPRequest(object):
         self.streaming_callback = streaming_callback
 
 
-class HTTPResponse(object):
+class HTTPResponse:
     def __init__(self, request, code, headers={}, body="", effective_url=None,
                  error=None, request_time=None):
         self.request = request

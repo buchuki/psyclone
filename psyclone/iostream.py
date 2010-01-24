@@ -22,7 +22,7 @@ import logging
 import socket
 
 
-class IOStream(object):
+class IOStream:
     """A utility class to write to and read from a non-blocking socket.
 
     We support three methods: write(), read_until(), and read_bytes().

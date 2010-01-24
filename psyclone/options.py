@@ -173,7 +173,7 @@ class _Options(dict):
         raise Error("Unrecognized option %r" % name)
 
 
-class _Option(object):
+class _Option:
     def __init__(self, name, default=None, type=str, help=None, metavar=None,
                  multiple=False, file_name=None):
         if default is None and multiple:
