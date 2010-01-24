@@ -19,12 +19,9 @@
 import html.entities
 import re
 import xml.sax.saxutils
-import urllib.request, urllib.parse, urllib.error
-from .byte_utils import force_str
-
 import json
-_json_decode = lambda s: json.loads(s)
-_json_encode = lambda v: json.dumps(v)
+import urllib.parse
+from .byte_utils import force_str
 
 
 def xhtml_escape(value):
@@ -39,12 +36,12 @@ def xhtml_unescape(value):
 
 def json_encode(value):
     """JSON-encodes the given Python object."""
-    return _json_encode(value)
+    return json.dumps(value)
 
 
 def json_decode(value):
     """Returns Python objects for the given JSON string."""
-    return _json_decode(value)
+    return json.loads(value)
 
 
 def squeeze(value):
