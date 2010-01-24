@@ -337,7 +337,7 @@ def _curl_setup_request(curl, request, buffer, headers):
     try:
         curl.setopt(pycurl.HEADERFUNCTION,
                     functools.partial(_curl_header_callback, headers))
-    except:
+    except Exception:
         # Old version of curl; response will not include headers
         pass
     if request.streaming_callback:

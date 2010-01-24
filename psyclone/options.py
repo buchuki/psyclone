@@ -57,7 +57,7 @@ import time
 # For pretty log messages, if available
 try:
     import curses
-except:
+except ImportError:
     curses = None
 
 
@@ -270,21 +270,17 @@ class _Option:
         r'\s*(%s)\s*(\w*)\s*' % _FLOAT_PATTERN, re.IGNORECASE)
 
     def _parse_timedelta(self, value):
-        try:
-            sum = datetime.timedelta()
-            start = 0
-            while start < len(value):
-                m = self._TIMEDELTA_PATTERN.match(value, start)
-                if not m:
-                    raise Exception()
-                num = float(m.group(1))
-                units = m.group(2) or 'seconds'
-                units = self._TIMEDELTA_ABBREV_DICT.get(units, units)
-                sum += datetime.timedelta(**{units: num})
-                start = m.end()
-            return sum
-        except:
-            raise
+        sum = datetime.timedelta()
+        start = 0
+        while start < len(value):
+            m = self._TIMEDELTA_PATTERN.match(value, start)
+            assert m
+            num = float(m.group(1))
+            units = m.group(2) or 'seconds'
+            units = self._TIMEDELTA_ABBREV_DICT.get(units, units)
+            sum += datetime.timedelta(**{units: num})
+            start = m.end()
+        return sum
 
     def _parse_bool(self, value):
         return value.lower() not in ("false", "0", "f")
@@ -303,7 +299,7 @@ def enable_pretty_logging():
     try:
         if not sys.stderr.isatty(): return
         curses.setupterm()
-    except:
+    except Exception:
         return
     channel = logging.StreamHandler()
     channel.setFormatter(_ColorLogFormatter())

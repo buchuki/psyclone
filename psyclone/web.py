@@ -203,7 +203,7 @@ class RequestHandler:
             if "Cookie" in self.request.headers:
                 try:
                     self._cookies.load(self.request.headers["Cookie"])
-                except:
+                except Exception:
                     self.clear_all_cookies()
         return self._cookies
 
@@ -291,7 +291,7 @@ class RequestHandler:
             return None
         try:
             return base64.b64decode(value)
-        except:
+        except Exception:
             return None
 
     def _cookie_signature(self, *parts):

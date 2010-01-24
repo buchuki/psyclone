@@ -196,8 +196,6 @@ class IOLoop:
                 fd, events = self._events.popitem()
                 try:
                     self._handlers[fd](fd, events)
-                except KeyboardInterrupt:
-                    raise
                 except OSError as e:
                     if e[0] == errno.EPIPE:
                         # Happens when the client closes the connection
@@ -205,7 +203,7 @@ class IOLoop:
                     else:
                         logging.error("Exception in I/O handler for fd %d",
                                       fd, exc_info=True)
-                except:
+                except Exception:
                     logging.error("Exception in I/O handler for fd %d",
                                   fd, exc_info=True)
         # reset the stopped flag so another start/stop pair can be issued
@@ -313,7 +311,7 @@ class PeriodicCallback:
         if not self._running: return
         try:
             self.callback()
-        except:
+        except Exception:
             logging.error("Error in periodic callback", exc_info=True)
         self.start()
 

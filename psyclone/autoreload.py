@@ -49,7 +49,7 @@ def _reload_on_update(io_loop, modify_times):
             path = path[:-1]
         try:
             modified = os.stat(path).st_mtime
-        except:
+        except Exception:
             continue
         if path not in modify_times:
             modify_times[path] = modified
@@ -59,6 +59,6 @@ def _reload_on_update(io_loop, modify_times):
             for fd in list(io_loop._handlers.keys()):
                 try:
                     os.close(fd)
-                except:
+                except IOError:
                     pass
             os.execv(sys.executable, [sys.executable] + sys.argv)

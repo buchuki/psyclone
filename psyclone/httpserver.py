@@ -200,7 +200,7 @@ class HTTPServer:
                 stream = iostream.IOStream(connection, io_loop=self.io_loop)
                 HTTPConnection(stream, address, self.request_callback,
                                self.no_keep_alive, self.xheaders)
-            except:
+            except Exception:
                 logging.error("Error in connection callback", exc_info=True)
 
 
