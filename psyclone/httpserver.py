@@ -27,10 +27,7 @@ import socket
 import time
 import urllib.parse
 
-try:
-    import ssl # Python 2.6+
-except ImportError:
-    ssl = None
+import ssl
 
 
 class HTTPServer:
@@ -197,7 +194,6 @@ class HTTPServer:
                     return
                 raise
             if self.ssl_options is not None:
-                assert ssl, "Python 2.6+ and OpenSSL required for SSL"
                 connection = ssl.wrap_socket(
                     connection, server_side=True, **self.ssl_options)
             try:
