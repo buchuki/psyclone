@@ -27,7 +27,7 @@ from . import ioloop
 import logging
 import pycurl
 import time
-
+from .byte_utils import force_str
 
 class HTTPClient:
     """A blocking HTTP client backed with pycurl.
@@ -263,12 +263,12 @@ class HTTPRequest:
                 timestamp, localtime=False, usegmt=True)
         if "Pragma" not in headers:
             headers["Pragma"] = ""
-        self.url = _utf8(url)
+        self.url = force_str(url)
         self.method = method
         self.headers = headers
         self.body = body
-        self.auth_username = _utf8(auth_username)
-        self.auth_password = _utf8(auth_password)
+        self.auth_username = force_str(auth_username)
+        self.auth_password = force_str(auth_password)
         self.connect_timeout = connect_timeout or 20.0
         self.request_timeout = request_timeout or 20.0
         self.follow_redirects = follow_redirects
@@ -424,12 +424,3 @@ def _curl_debug(debug_type, debug_msg):
             logging.debug('%s %s', debug_types[debug_type], line)
     elif debug_type == 4:
         logging.debug('%s %r', debug_types[debug_type], debug_msg)
-
-
-def _utf8(value):
-    if value is None:
-        return value
-    if isinstance(value, bytes):
-        return str(value, 'utf8')
-    assert isinstance(value, str)
-    return value

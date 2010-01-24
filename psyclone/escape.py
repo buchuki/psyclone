@@ -20,6 +20,7 @@ import html.entities
 import re
 import xml.sax.saxutils
 import urllib.request, urllib.parse, urllib.error
+from .byte_utils import force_str
 
 import json
 _json_decode = lambda s: json.loads(s)
@@ -28,12 +29,12 @@ _json_encode = lambda v: json.dumps(v)
 
 def xhtml_escape(value):
     """Escapes a string so it is valid within XML or XHTML."""
-    return xml.sax.saxutils.escape(_str(value))
+    return xml.sax.saxutils.escape(force_str(value))
 
 
 def xhtml_unescape(value):
     """Un-escapes an XML-escaped string."""
-    return re.sub(r"&(#?)(\w+?);", _convert_entity, _unicode(value))
+    return re.sub(r"&(#?)(\w+?);", _convert_entity, force_str(value))
 
 
 def json_encode(value):
@@ -53,38 +54,12 @@ def squeeze(value):
 
 def url_escape(value):
     """Returns a valid URL-encoded version of the given value."""
-    return urllib.parse.quote_plus(utf8(value))
+    return urllib.parse.quote_plus(force_str(value))
 
 
 def url_unescape(value):
     """Decodes the given value from a URL."""
-    return _unicode(urllib.parse.unquote_plus(value))
-
-
-def _bytes(value):
-    if isinstance(value, str):
-        return bytes(value, 'utf8')
-    assert isinstance(value, bytes)
-    return value
-
-def _str(value):
-    if isinstance(value, bytes):
-        return str(value, 'utf8')
-    assert isinstance(value, str)
-    return value
-
-def utf8(value):
-    if isinstance(value, str):
-        return value.encode("utf-8")
-    assert isinstance(value, str)
-    return value
-
-
-def _unicode(value):
-    if isinstance(value, str):
-        return value.decode("utf-8")
-    assert isinstance(value, str)
-    return value
+    return force_string(urllib.parse.unquote_plus(value))
 
 
 def _convert_entity(m):

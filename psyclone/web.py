@@ -67,8 +67,8 @@ from . import template
 import time
 import types
 import urllib.request, urllib.parse, urllib.error
-import urllib.parse
 import uuid
+from .byte_utils import force_str, force_bytes
 
 
 class RequestHandler:
@@ -191,7 +191,7 @@ class RequestHandler:
             return default
         # Get rid of any weird control chars
         value = re.sub(r"[\x00-\x08\x0e-\x1f]", " ", values[-1])
-        value = _unicode(value)
+        value = force_str(value)
         if strip: value = value.strip()
         return value
 
@@ -216,8 +216,8 @@ class RequestHandler:
     def set_cookie(self, name, value, domain=None, expires=None, path="/",
                    expires_days=None):
         """Sets the given cookie name/value with the given options."""
-        name = _str(name)
-        value = _str(value)
+        name = force_str(name)
+        value = force_str(value)
         if re.search(r"[\x00-\x20]", name + value):
             # Don't let us accidentally inject bad stuff
             raise ValueError("Invalid cookie %r: %r" % (name, value))
@@ -259,7 +259,7 @@ class RequestHandler:
         To read a cookie set with this method, use get_secure_cookie().
         """
         timestamp = str(int(time.time()))
-        value = base64.b64encode(_bytes(value))
+        value = base64.b64encode(force_bytes(value))
         logging.debug("Setting {0} type {1} with timestampe {2} type {3}".format(
             value, type(value), timestamp, type(timestamp)))
         signature = self._cookie_signature(value, timestamp)
@@ -299,7 +299,7 @@ class RequestHandler:
         hash = hmac.new(self.application.settings["cookie_secret"],
                         digestmod=hashlib.sha1)
         for part in parts:
-            part = _bytes(part)
+            part = force_bytes(part)
             logging.debug("cookie signature part: {0}".format(part))
             hash.update(part)
         return hash.hexdigest()
@@ -310,7 +310,7 @@ class RequestHandler:
             raise Exception("Cannot redirect after headers have been written")
         self.set_status(301 if permanent else 302)
         # Remove whitespace
-        url = re.sub(r"[\x00-\x20]+", "", _str(url))
+        url = re.sub(r"[\x00-\x20]+", "", force_str(url))
         self.set_header("Location", urllib.parse.urljoin(self.request.uri, url))
         self.finish()
 
@@ -326,7 +326,7 @@ class RequestHandler:
         if isinstance(chunk, dict):
             chunk = escape.json_encode(chunk)
             self.set_header("Content-Type", "text/javascript; charset=UTF-8")
-        chunk = _bytes(chunk)
+        chunk = force_bytes(chunk)
         self._write_buffer.append(chunk)
 
     def render(self, template_name, **kwargs):
@@ -341,7 +341,7 @@ class RequestHandler:
         html_heads = []
         for module in getattr(self, "_active_modules", {}).values():
             embed_part = module.embedded_javascript()
-            if embed_part: js_embed.append(_str(embed_part))
+            if embed_part: js_embed.append(force_str(embed_part))
             file_part = module.javascript_files()
             if file_part:
                 if isinstance(file_part, str):
@@ -349,7 +349,7 @@ class RequestHandler:
                 else:
                     js_files.extend(file_part)
             embed_part = module.embedded_css()
-            if embed_part: css_embed.append(_str(embed_part))
+            if embed_part: css_embed.append(force_str(embed_part))
             file_part = module.css_files()
             if file_part:
                 if isinstance(file_part, str):
@@ -357,7 +357,7 @@ class RequestHandler:
                 else:
                     css_files.extend(file_part)
             head_part = module.html_head()
-            if head_part: html_heads.append(_str(head_part))
+            if head_part: html_heads.append(force_str(head_part))
         if js_files:
             paths = set()
             for path in js_files:
@@ -1364,22 +1364,6 @@ class URLSpec:
         return self._path % tuple([str(a) for a in args])
 
 url = URLSpec
-
-def _str(s):
-    if isinstance(s, bytes):
-        return str(s, 'utf8')
-    assert isinstance(s, str)
-    return s
-
-def _unicode(s):
-    assert isinstance(s, str)
-    return s
-
-def _bytes(s):
-    if isinstance(s, str):
-        return bytes(s, 'utf8')
-    assert isinstance(s, bytes)
-    return s
 
 def _time_independent_equals(a, b):
     if len(a) != len(b):
