@@ -60,6 +60,7 @@ import sys
 import time
 import urllib.request, urllib.parse, urllib.error
 from . import web
+from .httpserver import HTTPHeaders
 
 
 class WSGIApplication(web.Application):
@@ -278,24 +279,3 @@ class WSGIContainer:
         summary = request.method + " " + request.uri + " (" + \
             request.remote_ip + ")"
         log_method("%d %s %.2fms", status_code, summary, request_time)
-
-
-class HTTPHeaders(dict):
-    """A dictionary that maintains Http-Header-Case for all keys."""
-    def __setitem__(self, name, value):
-        super().__setitem__(self._normalize_name(name), value)
-
-    def __getitem__(self, name):
-        return super().__getitem__(self._normalize_name(name))
-
-    def _normalize_name(self, name):
-        return "-".join([w.capitalize() for w in name.split("-")])
-
-    @classmethod
-    def parse(cls, headers_string):
-        headers = cls()
-        for line in headers_string.splitlines():
-            if line:
-                name, value = line.split(": ", 1)
-                headers[name] = value
-        return headers
