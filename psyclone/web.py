@@ -666,7 +666,7 @@ class RequestHandler:
             try:
                 f = open(os.path.join(
                     self.application.settings["static_path"], path))
-                hashes[path] = hashlib.md5(f.read()).hexdigest()
+                hashes[path] = hashlib.md5(force_bytes(f.read())).hexdigest()
                 f.close()
             except:
                 logging.error("Could not open static file %r", path)
