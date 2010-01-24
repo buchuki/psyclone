@@ -297,8 +297,9 @@ class RequestHandler:
 
     def _cookie_signature(self, *parts):
         self.require_setting("cookie_secret", "secure cookies")
-        hash = hmac.new(self.application.settings["cookie_secret"],
-                        digestmod=hashlib.sha1)
+        hash = hmac.new(force_bytes(
+            self.application.settings["cookie_secret"]),
+            digestmod=hashlib.sha1)
         for part in parts:
             part = force_bytes(part)
             logging.debug("cookie signature part: {0}".format(part))
