@@ -668,7 +668,7 @@ class RequestHandler:
                     self.application.settings["static_path"], path))
                 hashes[path] = hashlib.md5(force_bytes(f.read())).hexdigest()
                 f.close()
-            except:
+            except IOError:
                 logging.error("Could not open static file %r", path)
                 hashes[path] = None
         base = self.request.protocol + "://" + self.request.host \
