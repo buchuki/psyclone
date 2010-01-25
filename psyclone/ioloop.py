@@ -257,9 +257,7 @@ class IOLoop:
     def _run_callback(self, callback):
         try:
             callback()
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
+        except Exception:
             logging.error("Exception in callback %r", callback, exc_info=True)
 
     def _read_waker(self, fd, events):
