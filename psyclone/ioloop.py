@@ -284,10 +284,6 @@ class _Timeout:
         return (self.deadline, id(self.callback)) < (
                 other.deadline, id(other.callback))
 
-    def __cmp__(self, other):
-        return cmp((self.deadline, id(self.callback)),
-                   (other.deadline, id(other.callback)))
-
 
 class PeriodicCallback:
     """Schedules the given callback to be called periodically.
