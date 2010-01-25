@@ -392,9 +392,11 @@ try:
     _poll = select.epoll
 except AttributeError:
     try:
-        _poll = _KQueue
+        kqueue = select.kqueue
     except AttributeError:
         import sys
         if "linux" in sys.platform:
             logging.warning("epoll module not found; using select()")
         _poll = _Select
+    else
+        _poll = _KQueue
