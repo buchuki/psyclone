@@ -14,9 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import tornado.web
+import psyclone.web
 
 
-class Entry(tornado.web.UIModule):
+class Entry(psyclone.web.UIModule):
     def render(self):
         return '<div>ENTRY</div>'

@@ -1,6 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright 2009 Facebook
+# Copyright 2010 Dusty Phillips
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -16,15 +17,15 @@
 
 import logging
 import os.path
-import tornado.auth
-import tornado.escape
-import tornado.httpserver
-import tornado.ioloop
-import tornado.options
-import tornado.web
+import psyclone.auth
+import psyclone.escape
+import psyclone.httpserver
+import psyclone.ioloop
+import psyclone.options
+import psyclone.web
 import uimodules
 
-from tornado.options import define, options
+from psyclone.options import define, options
 
 define("port", default=8888, help="run on the given port", type=int)
 define("facebook_api_key", help="your Facebook application API key",
@@ -33,7 +34,7 @@ define("facebook_secret", help="your Facebook application secret",
        default="32fc6114554e3c53d5952594510021e2")
 
 
-class Application(tornado.web.Application):
+class Application(psyclone.web.Application):
     def __init__(self):
         handlers = [
             (r"/", MainHandler),
@@ -51,19 +52,19 @@ class Application(tornado.web.Application):
             ui_modules= {"Post": PostModule},
             debug=True,
         )
-        tornado.web.Application.__init__(self, handlers, **settings)
+        psyclone.web.Application.__init__(self, handlers, **settings)
 
 
-class BaseHandler(tornado.web.RequestHandler):
+class BaseHandler(psyclone.web.RequestHandler):
     def get_current_user(self):
         user_json = self.get_secure_cookie("user")
         if not user_json: return None
-        return tornado.escape.json_decode(user_json)
+        return psyclone.escape.json_decode(user_json)
 
 
-class MainHandler(BaseHandler, tornado.auth.FacebookMixin):
-    @tornado.web.authenticated
-    @tornado.web.asynchronous
+class MainHandler(BaseHandler, psyclone.auth.FacebookMixin):
+    @psyclone.web.authenticated
+    @psyclone.web.asynchronous
     def get(self):
         self.facebook_request(
             method="stream.get",
@@ -80,8 +81,8 @@ class MainHandler(BaseHandler, tornado.auth.FacebookMixin):
         self.render("stream.html", stream=stream)
 
 
-class AuthLoginHandler(BaseHandler, tornado.auth.FacebookMixin):
-    @tornado.web.asynchronous
+class AuthLoginHandler(BaseHandler, psyclone.auth.FacebookMixin):
+    @psyclone.web.asynchronous
     def get(self):
         if self.get_argument("session", None):
             self.get_authenticated_user(self.async_callback(self._on_auth))
@@ -90,13 +91,13 @@ class AuthLoginHandler(BaseHandler, tornado.auth.FacebookMixin):
     
     def _on_auth(self, user):
         if not user:
-            raise tornado.web.HTTPError(500, "Facebook auth failed")
-        self.set_secure_cookie("user", tornado.escape.json_encode(user))
+            raise psyclone.web.HTTPError(500, "Facebook auth failed")
+        self.set_secure_cookie("user", psyclone.escape.json_encode(user))
         self.redirect(self.get_argument("next", "/"))
 
 
-class AuthLogoutHandler(BaseHandler, tornado.auth.FacebookMixin):
-    @tornado.web.asynchronous
+class AuthLogoutHandler(BaseHandler, psyclone.auth.FacebookMixin):
+    @psyclone.web.asynchronous
     def get(self):
         self.clear_cookie("user")
         if not self.current_user:
@@ -111,16 +112,16 @@ class AuthLogoutHandler(BaseHandler, tornado.auth.FacebookMixin):
         self.redirect(self.get_argument("next", "/"))
 
 
-class PostModule(tornado.web.UIModule):
+class PostModule(psyclone.web.UIModule):
     def render(self, post, actor):
         return self.render_string("modules/post.html", post=post, actor=actor)
 
 
 def main():
-    tornado.options.parse_command_line()
-    http_server = tornado.httpserver.HTTPServer(Application())
+    psyclone.options.parse_command_line()
+    http_server = psyclone.httpserver.HTTPServer(Application())
     http_server.listen(options.port)
-    tornado.ioloop.IOLoop.instance().start()
+    psyclone.ioloop.IOLoop.instance().start()
 
 
 if __name__ == "__main__":
