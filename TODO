@@ -1,5 +1,4 @@
-Remove all references to _utf8 and _unicode (web.py, at the least)
 py.test unit tests
+Other demos...
 session framework, auth framework
 Do something about all those improper private variables
-Do something about duplicate classes, like HTTPHeaders in wsgi and httpserver
