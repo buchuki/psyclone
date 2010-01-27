@@ -10,5 +10,17 @@ Like Tornado, Psyclone is licensed under the Apache Licence, Version 2.0
 Long term, I expect this project to diverge from Tornado's original design and
 mission.
 
-Chances are it won't work yet, this is just the barebones port. I need to fix
-bugs, drop some unusable files, and make the examples work.
+Database access is not provided by the framework; you can use a database
+library directly. I suggest py-postgresql, as it provides an interface that is
+a little more sensible than dbapi. You can also use any Python 3.0 compliant
+orm; I'm not aware of any that work, but SQLAlchemy is, apparently, working on
+it.
+
+Testing is done with the Python 3.0 compatible py.test. Tornado had no tests,
+so I'm writing them myself, mostly to understand the framework, more than to
+test it.
+
+Status
+======
+The blog and hello world examples are working, so auth, templating, and the
+basic httpserver are up.
