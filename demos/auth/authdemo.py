@@ -1,6 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright 2009 Facebook
+# Copyright 2010 Dusty Phillips
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,19 +15,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import tornado.auth
-import tornado.escape
-import tornado.httpserver
-import tornado.ioloop
-import tornado.options
-import tornado.web
+import psyclone.auth
+import psyclone.escape
+import psyclone.httpserver
+import psyclone.ioloop
+import psyclone.options
+import psyclone.web
 
-from tornado.options import define, options
+from psyclone.options import define, options
 
 define("port", default=8888, help="run on the given port", type=int)
 
 
-class Application(tornado.web.Application):
+class Application(psyclone.web.Application):
     def __init__(self):
         handlers = [
             (r"/", MainHandler),
@@ -36,25 +37,25 @@ class Application(tornado.web.Application):
             cookie_secret="32oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
             login_url="/auth/login",
         )
-        tornado.web.Application.__init__(self, handlers, **settings)
+        psyclone.web.Application.__init__(self, handlers, **settings)
 
 
-class BaseHandler(tornado.web.RequestHandler):
+class BaseHandler(psyclone.web.RequestHandler):
     def get_current_user(self):
         user_json = self.get_secure_cookie("user")
         if not user_json: return None
-        return tornado.escape.json_decode(user_json)
+        return psyclone.escape.json_decode(user_json)
 
 
 class MainHandler(BaseHandler):
-    @tornado.web.authenticated
+    @psyclone.web.authenticated
     def get(self):
-        name = tornado.escape.xhtml_escape(self.current_user["name"])
+        name = psyclone.escape.xhtml_escape(self.current_user["name"])
         self.write("Hello, " + name)
 
 
-class AuthHandler(BaseHandler, tornado.auth.GoogleMixin):
-    @tornado.web.asynchronous
+class AuthHandler(BaseHandler, psyclone.auth.GoogleMixin):
+    @psyclone.web.asynchronous
     def get(self):
         if self.get_argument("openid.mode", None):
             self.get_authenticated_user(self.async_callback(self._on_auth))
@@ -63,16 +64,16 @@ class AuthHandler(BaseHandler, tornado.auth.GoogleMixin):
     
     def _on_auth(self, user):
         if not user:
-            raise tornado.web.HTTPError(500, "Google auth failed")
-        self.set_secure_cookie("user", tornado.escape.json_encode(user))
+            raise psyclone.web.HTTPError(500, "Google auth failed")
+        self.set_secure_cookie("user", psyclone.escape.json_encode(user))
         self.redirect("/")
 
 
 def main():
-    tornado.options.parse_command_line()
-    http_server = tornado.httpserver.HTTPServer(Application())
+    psyclone.options.parse_command_line()
+    http_server = psyclone.httpserver.HTTPServer(Application())
     http_server.listen(options.port)
-    tornado.ioloop.IOLoop.instance().start()
+    psyclone.ioloop.IOLoop.instance().start()
 
 
 if __name__ == "__main__":
