@@ -42,7 +42,7 @@ def json_encode(value):
 
 def json_decode(value):
     """Returns Python objects for the given JSON string."""
-    return json.loads(value)
+    return json.loads(force_str(value))
 
 
 def squeeze(value):
